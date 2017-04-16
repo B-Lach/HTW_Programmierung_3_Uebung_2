@@ -30,6 +30,14 @@ public enum Waehrung {
 	}
 	
 	/**
+	 * Gibt den Umrechnungskurs der Währung zu Euro zurück
+	 * @return der Umrechnungskurs
+	 */
+	public final double getUmrechnungskurs() {
+		return kurs;
+	}
+	
+	/**
 	 * Methode um einen Betrag in Euro in die Landeswaehrung umzurechnen
 	 * @param betrag Der zu konvertierende Betrag in Euro
 	 * @return Umgerechneter Betrag in Landeswaehrung
