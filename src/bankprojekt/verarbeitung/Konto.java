@@ -19,7 +19,12 @@ public abstract class Konto
 	 * der aktuelle Kontostand
 	 */
 	private double kontostand;
-
+	
+	/**
+	 * Die Waehrung des Kontos - Default is Euro
+	 */
+	protected Waehrung waehrung = Waehrung.EUR;
+	
 	/**
 	 * setzt den aktuellen Kontostand
 	 * @param kontostand neuer Kontostand
@@ -29,14 +34,14 @@ public abstract class Konto
 	}
 
 	/**
-	 * Wenn das Konto gesperrt ist (gesperrt = true), können keine Aktionen daran mehr vorgenommen werden,
-	 * die zum Schaden des Kontoinhabers wären (abheben, Inhaberwechsel)
+	 * Wenn das Konto gesperrt ist (gesperrt = true), kï¿½nnen keine Aktionen daran mehr vorgenommen werden,
+	 * die zum Schaden des Kontoinhabers wï¿½ren (abheben, Inhaberwechsel)
 	 */
 	private boolean gesperrt;
 
 	/**
 	 * Setzt die beiden Eigenschaften kontoinhaber und kontonummer auf die angegebenen Werte,
-	 * der anfängliche Kontostand wird auf 0 gesetzt.
+	 * der anfï¿½ngliche Kontostand wird auf 0 gesetzt.
 	 *
 	 * @param inhaber Kunde
 	 * @param kontonummer long
@@ -61,7 +66,7 @@ public abstract class Konto
 
 
 	/**
-	 * liefert den Kontoinhaber zurück
+	 * liefert den Kontoinhaber zurï¿½ck
 	 * @return   Kunde
 	 */
 	public final Kunde getInhaber() {
@@ -84,6 +89,32 @@ public abstract class Konto
 	}
 	
 	/**
+	 * liefert die aktuelle Waehrung
+	 * @return Waehrung
+	 */
+	public Waehrung getAktuelleWaehrung() {
+		return waehrung;
+	}
+	
+	/**
+	 * Wecheslt aktuelle Waehrung und Kontostand des Kontos 
+	 * @param neu die neue zu verwendene Waehrung
+	 * @throws IllegalArgumentException, wenn neu null ist
+	 */
+	public void waehrungswechsel(Waehrung neu) {
+		if (neu == null) {
+			throw new IllegalArgumentException("Waehrung darf nicht null sein!");
+		}
+		
+		if (this.waehrung != neu) {
+			// 1. Rechne aktuellen kontostand in Euro um
+			double _standeuro = kontostand / waehrung.getUmrechnungskurs();
+			// 2. Rechne Euro in neue Waehrung um
+			kontostand = neu.umrechnen(_standeuro);
+			waehrung = neu;
+		}
+	}
+	/**
 	 * liefert den aktuellen Kontostand
 	 * @return   double
 	 */
@@ -92,7 +123,7 @@ public abstract class Konto
 	}
 
 	/**
-	 * liefert die Kontonummer zurück
+	 * liefert die Kontonummer zurï¿½ck
 	 * @return   long
 	 */
 	public final long getKontonummer() {
@@ -100,7 +131,7 @@ public abstract class Konto
 	}
 
 	/**
-	 * liefert zurück, ob das Konto gesperrt ist oder nicht
+	 * liefert zurï¿½ck, ob das Konto gesperrt ist oder nicht
 	 * @return
 	 */
 	public final boolean isGesperrt() {
@@ -108,7 +139,23 @@ public abstract class Konto
 	}
 	
 	/**
-	 * Erhöht den Kontostand um den eingezahlten Betrag.
+	 * ErhÃ¶ht den Kontostand um den eingezahltenn Betrag in der angegebenden Waehrung
+	 * @param betrag der einzuzahlende Betrag
+	 * @param w die Waehrung des Betrages
+	 * @throws IllegalArgumentException wenn w null ist
+	 * @throws IllegalArgumentException wenn betrag negativ ist
+	 */
+	public void einzahlen(double betrag, Waehrung w) {
+		if (w == null) {
+			throw new IllegalArgumentException("Waehrung darf nicht null sein");
+		}
+		// 1. Rechne Betrag in euro um
+		// 2. Rechne Euro Betrag in Konto Waehrung um
+		this.einzahlen(waehrung.umrechnen( betrag/w.getUmrechnungskurs()));
+	}
+	
+	/**
+	 * Erhï¿½ht den Kontostand um den eingezahlten Betrag.
 	 *
 	 * @param betrag double
 	 * @throws IllegalArgumentException wenn der betrag negativ ist 
@@ -121,7 +168,7 @@ public abstract class Konto
 	}
 	
 	/**
-	 * Gibt eine Zeichenkettendarstellung der Kontodaten zurück.
+	 * Gibt eine Zeichenkettendarstellung der Kontodaten zurï¿½ck.
 	 */
 	@Override
 	public String toString() {
@@ -133,7 +180,26 @@ public abstract class Konto
 		ausgabe += this.getGesperrtText() + System.getProperty("line.separator");
 		return ausgabe;
 	}
-
+	
+	/**
+	 * Hebt einen Betrag in der angegebenen Waehrung ab
+	 * @param betrag der abzuhebene Betrag
+	 * @param w die zu erwendene Waehrung
+	 * @throws IllegalArgumentException wenn w null ist
+	 * @throws GesperrtException wenn das Konto gesperrt ist
+	 * @return true, wenn Abhebung erfolgreich
+	 * 		   false, wenn Abhebung nicht geklappt hat	
+	 */
+	public boolean abheben(double betrag, Waehrung w) throws GesperrtException {
+		if (w == null) {
+			throw new IllegalArgumentException("Waehrung darf nicht null sein!");
+		}
+		if(this.gesperrt) {
+			throw new GesperrtException(this.nummer);
+		}
+		return this.abheben(this.waehrung.umrechnen(betrag/w.getUmrechnungskurs()));	
+	}
+	
 	/**
 	 * Mit dieser Methode wird der geforderte Betrag vom Konto abgehoben, wenn es nicht gesperrt ist.
 	 *
@@ -146,14 +212,14 @@ public abstract class Konto
 	public abstract boolean abheben(double betrag) throws GesperrtException;
 	
 	/**
-	 * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.
+	 * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr mï¿½glich.
 	 */
 	public final void sperren() {
 		this.gesperrt = true;
 	}
 
 	/**
-	 * entsperrt das Konto, alle Kontoaktionen sind wieder möglich.
+	 * entsperrt das Konto, alle Kontoaktionen sind wieder mï¿½glich.
 	 */
 	public final void entsperren() {
 		this.gesperrt = false;
@@ -187,7 +253,7 @@ public abstract class Konto
 	
 	/**
 	 * liefert den ordentlich formatierten Kontostand
-	 * @return formatierter Kontostand mit 2 Nachkommastellen und Währungssymbol €
+	 * @return formatierter Kontostand mit 2 Nachkommastellen und Wï¿½hrungssymbol ï¿½
 	 */
 	public String getKontostandFormatiert()
 	{
