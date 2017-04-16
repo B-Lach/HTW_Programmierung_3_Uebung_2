@@ -7,7 +7,7 @@ package bankprojekt.verarbeitung;
  */
 public class Girokonto extends Konto {
 	/**
-	 * Wert, bis zu dem das Konto überzogen werden darf
+	 * Wert, bis zu dem das Konto ï¿½berzogen werden darf
 	 */
 	private double dispo;
 
@@ -46,7 +46,7 @@ public class Girokonto extends Konto {
 
 	/**
 	 * setzt den Dispo neu
-	 * @param dispo muss größer sein als 0
+	 * @param dispo muss grï¿½ï¿½er sein als 0
 	 * @throw IllegalArgumentException wenn dispo negativ ist
 	 */
 	public void setDispo(double dispo) {
@@ -57,7 +57,7 @@ public class Girokonto extends Konto {
 	
     /**
      * vermindert den Kontostand um den angegebenen Betrag, falls das Konto nicht gesperrt ist.
-     * Am Empfängerkonto wird keine Änderung vorgenommen, da davon ausgegangen wird, dass dieses sich
+     * Am Empfï¿½ngerkonto wird keine ï¿½nderung vorgenommen, da davon ausgegangen wird, dass dieses sich
      * bei einer anderen Bank befindet.
      * @param betrag double
      * @param empfaenger String
@@ -88,7 +88,7 @@ public class Girokonto extends Konto {
     }
 
     /**
-     * erhöht den Kontostand um den angegebenen Betrag
+     * erhï¿½ht den Kontostand um den angegebenen Betrag
      * @param betrag double
      * @param vonName String
      * @param vonKontonr int
@@ -127,6 +127,18 @@ public class Girokonto extends Konto {
 		}
 		else
 			return false;
+	}
+	
+	@Override
+	public void waehrungswechsel(Waehrung neu) {
+		if (neu == null) {
+			throw new IllegalArgumentException("neu darf nicht null sein!");
+		}
+		// dispo in neue Waehrung umrechnen
+		double _dispoeuro = dispo / waehrung.getUmrechnungskurs();
+		dispo = neu.umrechnen(_dispoeuro);
+		// kontostand in neue Waehrung umrechnen
+		super.waehrungswechsel(neu);
 	}
 
 }
